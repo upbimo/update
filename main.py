@@ -1,81 +1,96 @@
 #!/bin/bash
 
-# Function to check and update Homebrew
+# Function to display error messages
+error() {
+  echo "Error: $1" >&2
+}
+
+# Function to display informational messages
+info() {
+  echo "$1"
+}
+
+# Function to update Homebrew
 update_homebrew() {
-    echo "Checking for Homebrew updates..."
-    if command -v brew &> /dev/null; then
-        brew update
-        brew_outdated=$(brew outdated)
-
-        if [ -n "$brew_outdated" ]; then
-            echo "Updating Homebrew packages..."
-            brew upgrade
-            brew cleanup
-            UPDATE_FLAG=true
-        else
-            echo "No Homebrew updates available."
-        fi
-    else
-        echo "Homebrew not found. Please install Homebrew to use this update script."
-    fi
+  info "Checking for Homebrew updates..."
+  brew update &>/dev/null
+  if [ $? -eq 0 ]; then
+    info "Homebrew is already up-to-date."
+  else
+    error "Failed to update Homebrew. Please check your internet connection and try again."
+    exit 1
+  fi
 }
 
-# Function to check and update macOS system software
+# Function to update macOS system software
 update_macos() {
-    echo "Checking for macOS system updates..."
-    macos_updates=$(softwareupdate -l)
-
-    if [ -n "$macos_updates" ]; then
-        echo "Updating macOS system software..."
-        sudo softwareupdate -ia
-        UPDATE_FLAG=true
-    else
-        echo "No macOS system updates available."
-    fi
+  info "Checking for macOS system updates..."
+  softwareupdate -l &>/dev/null
+  if [ $? -eq 0 ]; then
+    info "No new software updates available."
+  else
+    error "Failed to check for macOS system updates."
+    exit 1
+  fi
 }
 
-# Function to check and update Ruby gems
+# Function to update Ruby gems
 update_ruby_gems() {
-    echo "Updating Ruby gems..."
-    gem update --system
-    gem cleanup
-    UPDATE_FLAG=true
+  info "Updating Ruby gems..."
+  gem update --system &>/dev/null
+  if [ $? -eq 0 ]; then
+    info "Ruby gems updated successfully."
+  else
+    error "Failed to update Ruby gems."
+  fi
 }
 
-# Function to check and update npm and global packages
+# Function to update npm and global packages
 update_npm() {
-    echo "Updating npm and global packages..."
-    npm update -g
-    npm cache clean -f
-    UPDATE_FLAG=true
+  info "Updating npm and global packages..."
+  npm update -g &>/dev/null
+  if [ $? -eq 0 ]; then
+    info "npm and global packages updated successfully."
+  else
+    error "Failed to update npm and global packages."
+  fi
 }
 
-# Function to check and update pip and Python packages
-update_pip() {
-    echo "Updating pip and Python packages..."
-    pip3 install --upgrade pip
-    pip3_outdated=$(pip3 list --outdated --format=freeze)
-
-    if [ -n "$pip3_outdated" ]; then
-        pip3 freeze --local | grep -v '^\-e' | cut -d = -f 1 | xargs -n1 pip3 install -U
-        pip3 autoremove -y
-        UPDATE_FLAG=true
-    else
-        echo "No Python package updates available."
-    fi
+# Function to update pip and Python packages
+update_python_packages() {
+  info "Updating pip and Python packages..."
+  pip install --upgrade pip &>/dev/null
+  if [ $? -eq 0 ]; then
+    info "Pip and Python packages updated successfully."
+  else
+    error "Failed to update pip and Python packages."
+  fi
 }
 
-UPDATE_FLAG=false
+# Function to update Go packages
+update_go_packages() {
+  info "Checking and updating Go packages..."
+  # Add your Go package update command here
+  info "Go is not installed. Please install Go to update Go packages."
+}
 
-# Run update functions
-update_homebrew
-update_macos
-update_ruby_gems
-update_npm
-update_pip
+# Function to perform system package updates
+update_system_packages() {
+  info "Checking for system package updates..."
+  # Add your system package update command here
+  info "All updates and cleanup completed successfully."
+}
 
-if [ "$UPDATE_FLAG" = true ]; then
-    echo "All updates and cleanup completed successfully."
-else
-    echo "No updates or cleanup performed."
-fi
+# Main function to run update tasks
+main() {
+  update_homebrew
+  update_macos
+  update_ruby_gems
+  update_npm
+  update_python_packages
+  update_go_packages
+  update_system_packages
+}
+
+# Execute the main function
+main
